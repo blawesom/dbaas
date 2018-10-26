@@ -1,0 +1,62 @@
+###################
+# Set users and hostname
+###################
+
+# - name: Set hostname
+#   hostname: name={{ inventory_hostname }}
+
+###################
+# Security
+###################
+- name: Install epel
+  yum: name=epel-release state=present
+
+- name: Install fail2ban
+  yum: name=fail2ban state=present
+
+- name: Start fail2ban service
+  service: name=fail2ban state=started enabled=true
+
+
+###################
+# Misc. tools
+###################
+- name: Install usefull system tools
+  yum: 
+    name: ['vim', 'htop', 'git', 'wget', 'MySQL-python'] 
+    state: present
+    
+###################
+# MYSQL
+###################
+- name: Get repo
+  get_url:
+    url: https://dev.mysql.com/get/mysql80-community-release-el7-1.noarch.rpm
+    dest: /tmp/mysql80-community-release-el7-1.noarch.rpm
+
+- name: Install repo
+  yum: name=/tmp/mysql80-community-release-el7-1.noarch.rpm  state=present
+  #command: rpm -Uvh /tmp/mysql80-community-release-el7-1.noarch.rpm
+
+- name: Install mysql
+  yum: name=mysql-server state=present
+
+- name: Get mysql default passwd
+  shell: "grep -oP 'temporary password(.*): \\K(\\S+)' /var/log/mysqld.log"
+  register: rootpwd
+
+- name: Start mysql service
+  service: name=mysqld state=started enabled=true
+
+- mysql_user:
+    login_user: root
+    login_password: "{{ rootpwd.stdout }}"
+    name: service
+    password: servicepassword
+    priv: '*.*:ALL,GRANT'
+    state: present
+
+###################
+# RabbitMQ
+###################
+

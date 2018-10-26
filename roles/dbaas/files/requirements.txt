@@ -1,0 +1,7 @@
+ansible
+Flask
+requests
+SQLAlchemy
+sqlalchemy-utils
+mysql-python
+pymysql
