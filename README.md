@@ -1,22 +1,5 @@
-# DOCUMENTATION
+# Context
 
-Functions:
-*CRD DB
+Quick project to create a web interface to handle CRD of Databases and Tables on a mysql server.
 
-*CRUD Table
-** CREATE
-** SHOW
-** DROP
-** USE
-** (ALTER)
-
-*CRUD Data
-** INSERT
-** DELETE
-** SELECT + Filters
-
-Example usage:
-=> POST
-requests.post('endpoint', {db, table, SQL_request})
-or
-requests.post('endpoint/db/table', {SQL_request})
+Will package deployment of mysql with ansible, configuration and webserver.
