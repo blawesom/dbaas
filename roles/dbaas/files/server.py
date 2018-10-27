@@ -6,7 +6,6 @@
 import flask
 from flask import request
 import sqlalchemy
-from sqlalchemy_utils import create_database, database_exists
 
 
 # from sqlalchemy import create_engine
@@ -36,30 +35,51 @@ def status():
                             'status': 'ok'})
 
 
-@app.route('/db', methods=['GET'])
-def read_db():
+@app.route('/db', methods=['GET', 'PUT', 'DELETE'])
+def manage_db():
     engine = sqlalchemy.create_engine(MYSQL_URL)
-    insp = sqlalchemy.inspect(engine)
-    db_list = insp.get_schema_names()
-    return flask.jsonify({ 'db' : [{'name': item} for item in db_list]})
+    connect = engine.connect()
+    
+    # Get Databases
+    if request.method == 'GET':
+        db_list = connect.execute('show databases')
+        return flask.jsonify({ 'db' : [{'name': item[0]} for item in db_list]})
 
+    db_name = request.form.get('name')
+    # Create Database
+    if request.method == 'PUT':
+        if db_name not in (None, 'db'):
+            db = connect.execute('create database if not exists {}'.format(db_name))
+    # Detele Database
+    if request.method == 'DELETE':
+        if db_name not in (None, 'db'):
+            db = connect.execute('drop database if exists {}'.format(db_name))
 
-@app.route('/db', methods=['POST'])
-def create_db():
-    db_name = request.args.get('name')
-    if db_name not in (None, 'db'):
-        if not database_exists(MYSQL_URL):
-            create_database(db_name)
     return flask.jsonify({ 'db' : {'name': db_name}})
 
 
-@app.route('/db', methods=['DELETE'])
-def delete_db():
-    db_name = request.args.get('name')
-    if db_name not in (None, 'db'):
-        if database_exists(MYSQL_URL):
-            drop_database(db_name)
-    return flask.jsonify({ 'db' : {'name': db_name}})
+@app.route('/<db_name>', methods=['GET', 'PUT', 'DELETE'])
+def manage_table(db_name):
+    try:
+        engine = sqlalchemy.create_engine('{0}{1}'.format(MYSQL_URL, db_name))
+        connect = engine.connect()
+    except Exception as error:
+        return flask.jsonify({'error': string(error)})
+
+    # Get Tables
+    if request.method == 'GET':
+        table_list = engine.table_names()
+        return flask.jsonify({ 'table': [{'name': item} for item in table_list]})
+
+    table_name = request.form.get('name')
+    # Create Table
+    if request.method == 'PUT':
+        table = connect.execute('create table {}'.format(table_name))    
+    # Delete Table
+    if request.method == 'DELETE':
+        table = connect.execute('drop table {}'.format(table_name))
+
+    return flask.jsonify({ 'table': {'name': table_name}}) 
 
 
 # ------ Run Server ------
