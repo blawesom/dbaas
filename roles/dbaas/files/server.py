@@ -7,10 +7,6 @@ import flask
 from flask import request
 import sqlalchemy
 
-
-# from sqlalchemy import create_engine
-# from sqlalchemy.orm import sessionmaker
-
 app = flask.Flask(__name__)
 
 # ------ DB params ------
@@ -21,11 +17,6 @@ db_user = 'service'
 db_pwd = 'Servicep4ssword!'
 
 MYSQL_URL='mysql+pymysql://{0}:{1}@{2}:{3}/'.format(db_user, db_pwd, db_host, db_port)
-
-# engine = create_engine(MYSQL_URL)
-# models.Base.metadata.create_all(engine)
-# Session = sessionmaker(bind=engine)
-# conn = Session()
 
 # ------ Web Server ------
 
